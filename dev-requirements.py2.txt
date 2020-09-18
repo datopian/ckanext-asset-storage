@@ -18,7 +18,7 @@ funcsigs==1.0.2           # via pytest
 functools32==3.2.3.post2  # via flake8
 futures==3.3.0            # via isort
 importlib-metadata==1.6.0  # via pluggy, pytest
-isort==4.3.21             # via pytest-isort
+isort==4.3.21             # via -r dev-requirements.in, pytest-isort
 mccabe==0.6.1             # via flake8
 more-itertools==5.0.0     # via pytest
 packaging==20.3           # via pytest
