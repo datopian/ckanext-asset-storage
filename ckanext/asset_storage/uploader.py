@@ -22,8 +22,8 @@ UploadedFileWrapper = Union[cgi.FieldStorage, FileStorage]
 
 def get_configured_storage():
     # type: () -> StorageBackend
-    backend_type = toolkit.config.get('ckanext.asset_storage.backend_type', 'local')
-    config = toolkit.config.get('ckanext.asset_storage.backend_config', {})
+    backend_type = toolkit.config.get(CONF_BACKEND_TYPE, 'local')
+    config = toolkit.config.get(CONF_BACKEND_CONFIG, {})
     return get_storage(backend_type=backend_type, backend_config=config)
 
 

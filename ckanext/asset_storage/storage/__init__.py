@@ -28,7 +28,10 @@ def get_storage(backend_type, backend_config):
     except (ImportError, AttributeError):
         raise ValueError('Invalid backend name: unable to import {}'.format(backend_type))
 
-    return factory(**backend_config)
+    try:
+        return factory(**backend_config)
+    except TypeError as e:
+        raise TypeError('Are you storage missing backend configuration options? (was: {})'.format(e))
 
 
 class StorageBackend(object):
