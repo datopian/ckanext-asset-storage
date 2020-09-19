@@ -93,7 +93,7 @@ class AssetUploader(object):
         encode it in a way suitable for saving in the DB
         """
         storage_url = self._storage.get_storage_uri(filename, prefix)
-        if _is_absolute_http_url(storage_url):
+        if is_absolute_http_url(storage_url):
             return storage_url
         return quote(storage_url, safe='')
 
@@ -112,7 +112,7 @@ class AssetUploader(object):
 
         if self._clear \
                 and self._old_filename \
-                and not _is_absolute_http_url(self._old_filename):
+                and not is_absolute_http_url(self._old_filename):
             self._storage.delete(self._old_filename)
 
     @staticmethod
@@ -133,7 +133,7 @@ class AssetUploader(object):
         This will return the original URL if it does not match our
         expected pattern
         """
-        if not _is_absolute_http_url(url):
+        if not is_absolute_http_url(url):
             return url
         url_pattern = toolkit.url_for('asset_storage.uploaded_file', file_uri='__URI__')
         pattern_parts = url_pattern.split('__URI__')
@@ -144,22 +144,9 @@ class AssetUploader(object):
             return url[len(pattern_parts[0])][:-len(pattern_parts[1])]
 
 
-def _is_absolute_http_url(url):
+def is_absolute_http_url(url):
     # type (str) -> bool
     """Tell if a string looks like an absolute HTTP URL
-
-    >>> _is_absolute_http_url('https://foo.com/bar')
-    True
-    >>> _is_absolute_http_url('http://foo.com/bar')
-    True
-    >>> _is_absolute_http_url('http-file')
-    False
-    >>> _is_absolute_http_url('/foo/bar')
-    False
-    >>> _is_absolute_http_url('url')
-    False
-    >>> _is_absolute_http_url(None)
-    False
     """
     try:
         return url[0:6] in {'http:/', 'https:'}
