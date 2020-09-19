@@ -13,7 +13,7 @@ from werkzeug.datastructures import FileStorage
 from ckanext.asset_storage.storage import StorageBackend, get_storage
 
 CONF_BACKEND_TYPE = 'ckanext.asset_storage.backend_type'
-CONF_BACKEND_CONFIG = 'ckanext.asset_storage.backend_config'
+CONF_BACKEND_CONFIG = 'ckanext.asset_storage.backend_options'
 ALLOWED_UPLOAD_TYPES = (cgi.FieldStorage, FileStorage)
 
 # This is used for typing uploaded file form field wrapper

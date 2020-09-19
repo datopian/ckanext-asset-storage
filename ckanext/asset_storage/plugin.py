@@ -34,6 +34,6 @@ class AssetStoragePlugin(plugins.SingletonPlugin):
     # IUploader
 
     def get_uploader(self, upload_to, old_filename):
-        return uploader.AssetUploader(upload_to=upload_to,
+        return uploader.AssetUploader(object_type=upload_to,
                                       old_filename=old_filename,
                                       storage=uploader.get_configured_storage())

@@ -3,7 +3,10 @@ from importlib import import_module
 from shutil import copyfileobj
 from typing import Any, BinaryIO, Dict, Optional, Tuple, Union
 
-from pathlib2 import Path
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 NAMED_BACKENDS = {'local': 'ckanext.asset_storage.storage:LocalStorage',
                   }

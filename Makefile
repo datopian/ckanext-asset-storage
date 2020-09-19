@@ -46,7 +46,8 @@ CKAN_CONFIG_VALUES := \
 		ckan.plugins='$(CKAN_LOAD_PLUGINS)' \
 		ckan.storage_path='%(here)s/storage' \
 		solr_url=http://127.0.0.1:8983/solr/ckan \
-		ckanext.asset_storage.some_config=has-value
+		ckanext.asset_storage.backend_type=local \
+		ckanext.asset_storage.backend_options='{"storage_path": "./asset-storage"}'
 
 CKAN_TEST_CONFIG_VALUES := \
 		sqlalchemy.url=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(POSTGRES_DB)_test \
