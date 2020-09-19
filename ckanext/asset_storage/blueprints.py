@@ -2,7 +2,7 @@
 """
 from flask import Blueprint, redirect, send_file
 
-from .uploader import get_configured_storage, is_absolute_http_url
+from .uploader import decode_uri, get_configured_storage, is_absolute_http_url
 
 blueprint = Blueprint(
     'asset_storage',
@@ -17,7 +17,7 @@ def uploaded_file(file_uri):
     or the asset itself as a stream of bytes (?)
     """
     storage = get_configured_storage()
-    storage_result = storage.download(file_uri)
+    storage_result = storage.download(decode_uri(file_uri))
     if hasattr(storage_result, 'read'):
         # File-like object, just serve it
         return send_file(storage_result)
@@ -32,4 +32,4 @@ def uploaded_file(file_uri):
                      format(storage_result))
 
 
-blueprint.add_url_rule(u'/uploads/<file_uri>', view_func=uploaded_file)
+blueprint.add_url_rule(u'/asset/<file_uri>', view_func=uploaded_file)

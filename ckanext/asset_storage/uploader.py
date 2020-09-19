@@ -7,7 +7,7 @@ from typing import Optional, Union
 from ckan.lib.munge import munge_filename_legacy
 from ckan.lib.uploader import _get_underlying_file  # noqa
 from ckan.plugins import toolkit
-from six.moves.urllib_parse import quote
+from six.moves.urllib_parse import quote, unquote
 from werkzeug.datastructures import FileStorage
 
 from ckanext.asset_storage.storage import StorageBackend, get_storage
@@ -87,16 +87,6 @@ class AssetUploader(object):
         if filename is not None:
             data_dict[url_field] = filename
 
-    def _get_storage_uri(self, filename, prefix):
-        # type: (str, Optional[str]) -> str
-        """Get the URI of a to-be-uploaded file from the storage backend and
-        encode it in a way suitable for saving in the DB
-        """
-        storage_url = self._storage.get_storage_uri(filename, prefix)
-        if is_absolute_http_url(storage_url):
-            return storage_url
-        return quote(storage_url, safe='')
-
     def upload(self, max_size=2):
         """Actually upload the file.
 
@@ -114,6 +104,18 @@ class AssetUploader(object):
                 and self._old_filename \
                 and not is_absolute_http_url(self._old_filename):
             self._storage.delete(self._old_filename)
+
+    def _get_storage_uri(self, filename, prefix):
+        # type: (str, Optional[str]) -> str
+        """Get the URI of a to-be-uploaded file from the storage backend and
+        encode it in a way suitable for saving in the DB
+        """
+        storage_url = self._storage.get_storage_uri(filename, prefix)
+        if is_absolute_http_url(storage_url):
+            return storage_url
+        return toolkit.url_for('asset_storage.uploaded_file',
+                               file_uri=quote(storage_url, safe=''),
+                               _external=True)
 
     @staticmethod
     def _create_uploaded_filename(uploaded_file_field):
@@ -135,13 +137,20 @@ class AssetUploader(object):
         """
         if not is_absolute_http_url(url):
             return url
-        url_pattern = toolkit.url_for('asset_storage.uploaded_file', file_uri='__URI__')
+        url_pattern = toolkit.url_for('asset_storage.uploaded_file', file_uri='__URI__', _external=True)
         pattern_parts = url_pattern.split('__URI__')
         if len(pattern_parts) != 2:
             raise RuntimeError("We really didn't get the expected URL pattern here")
 
         if url.startswith(pattern_parts[0]) and url.endswith(pattern_parts[1]):
-            return url[len(pattern_parts[0])][:-len(pattern_parts[1])]
+            return decode_uri(url[len(pattern_parts[0])][:-len(pattern_parts[1])])
+
+
+def decode_uri(uri):
+    # type: (str) -> str
+    """Decode a URI before passing it to storage
+    """
+    return unquote(uri)
 
 
 def is_absolute_http_url(url):

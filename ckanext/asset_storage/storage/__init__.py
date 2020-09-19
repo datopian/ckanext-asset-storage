@@ -1,3 +1,4 @@
+import logging
 import os.path
 from importlib import import_module
 from shutil import copyfileobj
@@ -10,6 +11,8 @@ except ImportError:
 
 NAMED_BACKENDS = {'local': 'ckanext.asset_storage.storage:LocalStorage',
                   }
+
+_log = logging.getLogger(__name__)
 
 
 def get_storage(backend_type, backend_config):
@@ -116,7 +119,11 @@ class LocalStorage(StorageBackend):
 
     def delete(self, uri):
         file_path = self._get_file_path(*self._parse_uri(uri))
-        file_path.unlink()
+        try:
+            file_path.unlink()
+        except OSError as e:
+            _log.warning('Failed to remove local file {}: {}'.format(file_path, e))
+            return False
         return True
 
     def _get_file_path(self, name, prefix):
