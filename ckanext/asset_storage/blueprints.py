@@ -2,7 +2,7 @@
 """
 from flask import Blueprint, redirect, send_file
 
-from .uploader import decode_uri, get_configured_storage, is_absolute_http_url
+from .uploader import decode_uri, get_configured_storage
 
 blueprint = Blueprint(
     'asset_storage',
