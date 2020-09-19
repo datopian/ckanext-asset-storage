@@ -5,7 +5,13 @@ ckanext-asset-storage
 
 **Store CKAN assets (org / group images) to cloud storage**
 
-TBD
+This CKAN extension moves storage of uploaded asset files - specifically, organization
+and group logos and the site logo, to a cloud storage backend. It is designed to be 
+flexible as it allows for different storage backends, and may support additional storage
+backends in the future. 
+
+**NOTE** This does not handle resource storage at all. For offloading resource storage,
+we recommend using [ckanext-blob-storage](https://github.com/datopian/ckanext-blob-storage). 
 
 Requirements
 ------------
@@ -13,10 +19,10 @@ Requirements
 * You need to have access to a supported Cloud Storage account to store assets in 
 
 Supported Storage Backends include:
-* AWS S3
-* Azure Blob Storage
-* Google Cloud Storage
-* ...
+* Google Cloud Storage (NOT YET)
+* AWS S3 (NOT YET)
+* Azure Blob Storage (NOT YET)
+* Local Storage (mainly for testing and fallback purposes)
 
 Installation
 ------------
@@ -45,9 +51,42 @@ sudo service apache2 reload
 Configuration settings
 ----------------------
 
-`ckanext.asset_storage.some_setting = 'https://...'`
+The following CKAN configuration options should be set:
 
+### `ckanext.asset_storage.backend_type = 'backend_type'`
+
+The storage backend type. The following types are supported out of the box:
+
+* `local` - Local filesystem storage
+* `google_cloud` - Google Cloud Storage
+* `azure_blobs` - Azure Blob Storage
+* `s3` - AWS S3 storage
+
+You can also write *custom* storage backends, and specify the fully
+qualified `package.module:Class` name of your storage class here. For 
+example, specifying `ckanext.my_storage.storage:MyStorageClass` will
+try to use `MyStorageClass` in the `ckanext.my_storage.storage` module
+as a storage backend. 
+
+### `ckanext.asset_storage.backend_options = {"some_opt":"value"}`
+
+Options to pass to the storage backend. This should be a Python dict 
+with key-value pairs. 
+
+The specific option keys depend on the storage `backend_type` in use:
+
+#### `local`
+* `storage_path` - the local directory to store files in
+
+#### `google_cloud`
 TBD
+
+#### `azure_blobs`
+TBD
+
+#### `s3`
+TBD
+
 
 Developer installation
 ----------------------
@@ -158,7 +197,6 @@ You can delete `*requirements.*.txt` and run `make requirements`.
 
 TODO: we can probably do this in a better way - create a `make` target
 for this.  
-
 
 Tests
 -----
