@@ -1,8 +1,9 @@
 import logging
+import mimetypes
 import os.path
 from importlib import import_module
 from shutil import copyfileobj
-from typing import Any, BinaryIO, Dict, Optional, Tuple, Union
+from typing import Any, BinaryIO, Dict, Optional, Tuple
 
 try:
     from pathlib import Path
@@ -37,6 +38,38 @@ def get_storage(backend_type, backend_config):
         raise TypeError('Are you storage missing backend configuration options? (was: {})'.format(e))
 
 
+class DownloadTarget(object):
+    """A response for a download request
+
+    Typically, this is instantiated by a `StorageBackend.download()` call using
+    one of the two factory methods to represent either a redirection response
+    or a direct download response.
+    """
+    def __init__(self, fileobj=None, filename=None, mimetype=None, redirect_to=None, redirect_code=302):
+        # type: (Optional[BinaryIO], Optional[str], Optional[str], Optional[str], Optional[int]) -> DownloadTarget
+        if mimetype is None and filename:
+            mimetype = mimetypes.guess_type(filename)[0]
+        self.fileobj = fileobj
+        self.filename = filename
+        self.mimetype = mimetype
+        self.redirect_to = redirect_to
+        self.redirect_code = redirect_code
+
+    @classmethod
+    def send_file(cls, fileobj, filename, mimetype=None):
+        # type: (BinaryIO, str, Optional[str]) -> DownloadTarget
+        """Factory for direct download responses
+        """
+        return cls(fileobj, filename, mimetype=mimetype)
+
+    @classmethod
+    def redirect(cls, redirect_to, redirect_code=302):
+        # type: (str, Optional[int]) -> DownloadTarget
+        """Factory for redirection response
+        """
+        return cls(redirect_to=redirect_to, redirect_code=redirect_code)
+
+
 class StorageBackend(object):
     """Interface for all storage backends
     """
@@ -63,18 +96,12 @@ class StorageBackend(object):
         raise NotImplementedError("Inheriting classes must implement this")
 
     def download(self, uri):
-        # type: (str) -> Union[BinaryIO, str, Tuple[str, int]]
+        # type: (str) -> DownloadTarget
         """Download a file from storage, given the file's URI
 
-        This may return either:
-          - A binary file-like object containing the stream of bytes to be
-            downloaded, or
-          - An absolute HTTP URL to redirect users to; Redirection will be
-            a temporary (non-cached) one, that is HTTP 302 Found
-          - A tuple of (URL, status code) in which case the user will be
-            redirected to the new HTTP URL with the given status code. This
-            allows backends to redirect users (either permanently or
-            temporarily) to a direct-to-storage URL.
+        This will return a DownloadTarget object, which can represent
+        either a direct download (and will include the open file object and
+        info about the file) or a redirection to a new URL.
         """
         raise NotImplementedError("Inheriting classes must implement this")
 
@@ -114,8 +141,10 @@ class LocalStorage(StorageBackend):
     def download(self, uri):
         """Download the file from local storage
         """
-        file_path = self._get_file_path(*self._parse_uri(uri))
-        return file_path.open('rb')
+        name, prefix = self._parse_uri(uri)
+        file_path = self._get_file_path(name, prefix)
+        fileobj = file_path.open('rb')
+        return DownloadTarget.send_file(fileobj, name)
 
     def delete(self, uri):
         file_path = self._get_file_path(*self._parse_uri(uri))

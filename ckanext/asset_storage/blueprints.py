@@ -18,15 +18,12 @@ def uploaded_file(file_uri):
     """
     storage = get_configured_storage()
     storage_result = storage.download(decode_uri(file_uri))
-    if hasattr(storage_result, 'read'):
+    if storage_result.fileobj:
         # File-like object, just serve it
-        return send_file(storage_result)
-    elif isinstance(storage_result, tuple):
-        # Got a redirect with pre-defined status code
-        return redirect(storage_result[0], storage_result[1])
-    elif is_absolute_http_url(storage_result):
-        # Got a redirect with no status code, default to 302
-        return redirect(storage_result)
+        return send_file(storage_result.fileobj, mimetype=storage_result.mimetype)
+    elif storage_result.redirect_to:
+        # Got a redirect response to an external URL
+        return redirect(storage_result.redirect_to, storage_result.redirect_code)
 
     raise ValueError("Unexpected response from storage backend: {}".
                      format(storage_result))
