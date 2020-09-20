@@ -1,7 +1,9 @@
 """ckanext-external-storage Flask blueprints
 """
+from ckan.plugins import toolkit
 from flask import Blueprint, redirect, send_file
 
+from .storage import exc
 from .uploader import decode_uri, get_configured_storage
 
 blueprint = Blueprint(
@@ -17,7 +19,11 @@ def uploaded_file(file_uri):
     or the asset itself as a stream of bytes (?)
     """
     storage = get_configured_storage()
-    storage_result = storage.download(decode_uri(file_uri))
+    try:
+        storage_result = storage.download(decode_uri(file_uri))
+    except exc.ObjectNotFound:
+        return toolkit.abort(404, "The requested asset was not found in storage")
+
     if storage_result.fileobj:
         # File-like object, just serve it
         return send_file(storage_result.fileobj, mimetype=storage_result.mimetype)
