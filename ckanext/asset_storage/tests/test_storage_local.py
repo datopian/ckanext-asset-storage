@@ -4,23 +4,7 @@ import pytest
 from six import BytesIO
 
 from ckanext.asset_storage.storage import exc
-from ckanext.asset_storage.storage.local import LocalStorage, copy_fileobj
-
-
-def test_copy_fileobj():
-    test_string = b'This is a source string'
-    source = BytesIO(test_string)
-    dest = BytesIO()
-    written = copy_fileobj(source, dest)
-    assert dest.getvalue() == source.getvalue()
-    assert written == len(test_string)
-
-
-def test_copy_fileobj_exceeds_max():
-    source = BytesIO(b'This is a source string')
-    dest = BytesIO()
-    with pytest.raises(exc.InvalidInput):
-        copy_fileobj(source, dest, max_bytes=5)
+from ckanext.asset_storage.storage.local import LocalStorage
 
 
 def test_store_get_uri():
@@ -45,24 +29,6 @@ def test_store_upload(storage_path):
 
     actual = (storage_path / 'assets' / 'my-file.txt').read_bytes()
     assert actual == content
-
-
-def test_store_upload_with_max_bytes(storage_path):
-    """Test uploading to local storage
-    """
-    content = b'This is the contents of the file'
-    storage = LocalStorage(storage_path=storage_path)
-    written = storage.upload(BytesIO(content), 'my-file.txt', 'assets', max_bytes=1024)
-    assert written == len(content)
-
-
-def test_store_upload_exceeds_max_bytes(storage_path):
-    """Test uploading to local storage
-    """
-    content = b'This is the contents of the file'
-    storage = LocalStorage(storage_path=storage_path)
-    with pytest.raises(exc.InvalidInput):
-        storage.upload(BytesIO(content), 'my-file.txt', 'assets', max_bytes=5)
 
 
 def test_store_upload_download(storage_path):

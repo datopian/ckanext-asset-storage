@@ -79,12 +79,12 @@ class StorageBackend(object):
         """
         raise NotImplementedError("Inheriting classes must implement this")
 
-    def upload(self, stream, name, prefix=None, max_bytes=None):
-        # type: (BinaryIO, str, Optional[str], Optional[int]) -> int
+    def upload(self, stream, name, prefix=None, mimetype=None):
+        # type: (BinaryIO, str, Optional[str], Optional[str]) -> int
         """Upload a file and return the number of bytes saved
 
-        If max_bytes is specified, the storage backend should not accept files
-        larger than that many bytes
+        Some storage backends may store metadata such as the file's MIME type,
+        but this is not supported by all storage backends.
         """
         raise NotImplementedError("Inheriting classes must implement this")
 

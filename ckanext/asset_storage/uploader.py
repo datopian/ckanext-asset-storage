@@ -1,6 +1,8 @@
 """CKAN Uploader implementation that wraps our storage backends
 """
 import datetime
+import mimetypes
+import os
 from typing import Optional, Union
 
 from ckan.lib.munge import munge_filename_legacy
@@ -71,7 +73,7 @@ class AssetUploader(object):
 
         if isinstance(uploaded_file, ALLOWED_UPLOAD_TYPES):
             self._filename = self._create_uploaded_filename(uploaded_file)
-            self._uploaded_file = _get_underlying_file(uploaded_file)
+            self._uploaded_file = uploaded_file
             filename = self._get_storage_uri(self._filename, self._object_type)
 
         elif self._old_filename and not self._old_filename.startswith('http'):
@@ -92,10 +94,14 @@ class AssetUploader(object):
         (note that not all backends will support this limitation).
         """
         if self._uploaded_file:
-            self._storage.upload(self._uploaded_file,
+            size = get_uploaded_size(self._uploaded_file)
+            if size and max_size and size > max_size * MB:
+                raise toolkit.ValidationError({'upload': ['File upload too large']})
+            mimetype = get_uploaded_mimetype(self._uploaded_file)
+            self._storage.upload(_get_underlying_file(self._uploaded_file),
                                  self._filename,
                                  self._object_type,
-                                 max_size * MB)
+                                 mimetype=mimetype)
             self._clear = True
 
         if self._clear \
@@ -159,3 +165,47 @@ def is_absolute_http_url(url):
         return url[0:6] in {'http:/', 'https:'}
     except (TypeError, IndexError, ValueError):
         return False
+
+
+def get_uploaded_mimetype(uploaded):
+    # type: (UploadedFileWrapper) -> Optional[str]
+    """Try to figure out the mime type of an uploaded file
+    """
+    mimetype = None
+    # Uploaded content-type header set by client
+    try:
+        mimetype = uploaded.headers['Content-Length']
+    except (AttributeError, KeyError):
+        pass
+
+    if mimetype:
+        return mimetype
+
+    # Guess mimetype based on file extension (may still be None)
+    mimetype = mimetypes.guess_type(uploaded.filename)[0]
+    return mimetype
+
+
+def get_uploaded_size(uploaded):
+    # type: (UploadedFileWrapper) -> Optional[int]
+    """Try to figure out the size in bytes of an uploaded file
+
+    This may not work for all uploaded file types, in which case None will
+    be returned
+    """
+    # Let's try to get the size from the stream first, as it is more reliable
+    stream = _get_underlying_file(uploaded)
+    if stream.seekable():
+        # Check we're not exceeding max size
+        stream.seek(0, os.SEEK_END)
+        size = stream.tell()
+        stream.seek(0)
+        return size
+
+    try:
+        # FlaskFileStorage / cgi.FieldStorage
+        return uploaded.headers['Content-Length']
+    except (AttributeError, KeyError):
+        pass
+
+    return None
