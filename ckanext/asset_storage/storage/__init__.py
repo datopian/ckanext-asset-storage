@@ -39,6 +39,9 @@ class DownloadTarget(object):
         # type: (Optional[BinaryIO], Optional[str], Optional[str], Optional[str], Optional[int]) -> DownloadTarget
         if mimetype is None and filename:
             mimetype = mimetypes.guess_type(filename)[0]
+            if mimetype is None:
+                mimetype = 'application/octet-stream'
+
         self.fileobj = fileobj
         self.filename = filename
         self.mimetype = mimetype
