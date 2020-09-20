@@ -76,10 +76,25 @@ with key-value pairs.
 The specific option keys depend on the storage `backend_type` in use:
 
 #### `local`
-* `storage_path` - the local directory to store files in
+* `storage_path` - (required, string) the local directory to store files in
 
 #### `google_cloud`
-TBD
+To use Google Cloud Storage, you must have an existing Google Cloud project and bucket. You need to obtain a 
+Google Account Key file (a JSON file downloadable from the Google Console) for a user or a service account that
+has "Object Admin" role on the bucket (at the very least they should be able to read, write and delete objcets).   
+
+The following configuration options are available:
+
+* `project_name` - (required, string) Google Cloud project name
+* `bucket_name` - (required, string) Google Cloud Storage bucket name
+* `account_key_file` - (required, string) Path to the Google Cloud credentials JSON file
+* `path_prefix` - (optional, string) A prefix to prepend to all stored assets in the bucket
+* `public_read` - (boolean, default `True`) Whether to allow public read access to uploaded assets. Setting to `False` 
+  means the asset can only be accessed after a request to this code to generate a signed URL. This will have some 
+  performance impact. You should keep this at the default unless you consider group / organization images sensitive / 
+  private information. 
+* `signed_url_lifetime` - (int, default `3600`) When public access is not allowed, this sets the max lifetime in seconds
+  of signed URLs. Typically you should not change this. 
 
 #### `azure_blobs`
 TBD
