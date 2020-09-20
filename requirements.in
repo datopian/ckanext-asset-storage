@@ -1,2 +1,6 @@
 six==1.14.*
 typing==3.7.*
+
+# Storage backend dependencies
+# TODO: Split these out so users don't have to install all of them
+google-cloud-storage==1.*

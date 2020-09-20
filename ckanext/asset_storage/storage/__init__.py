@@ -3,7 +3,7 @@ from importlib import import_module
 from typing import Any, BinaryIO, Dict, Optional
 
 NAMED_BACKENDS = {'local': 'ckanext.asset_storage.storage.local:LocalStorage',
-                  }
+                  'google_cloud': 'ckanext.asset_storage.storage.google_cloud:GoogleCloudStorage'}
 
 
 def get_storage(backend_type, backend_config):
