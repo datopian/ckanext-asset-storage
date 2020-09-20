@@ -1,23 +1,21 @@
 """CKAN Uploader implementation that wraps our storage backends
 """
-import cgi
 import datetime
 from typing import Optional, Union
 
 from ckan.lib.munge import munge_filename_legacy
 from ckan.lib.uploader import _get_underlying_file  # noqa
+from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES, MB
 from ckan.plugins import toolkit
 from six.moves.urllib_parse import quote, unquote
-from werkzeug.datastructures import FileStorage
 
 from ckanext.asset_storage.storage import StorageBackend, get_storage
 
 CONF_BACKEND_TYPE = 'ckanext.asset_storage.backend_type'
 CONF_BACKEND_CONFIG = 'ckanext.asset_storage.backend_options'
-ALLOWED_UPLOAD_TYPES = (cgi.FieldStorage, FileStorage)
 
 # This is used for typing uploaded file form field wrapper
-UploadedFileWrapper = Union[cgi.FieldStorage, FileStorage]
+UploadedFileWrapper = Union[ALLOWED_UPLOAD_TYPES]
 
 
 def get_configured_storage():
@@ -97,7 +95,7 @@ class AssetUploader(object):
             self._storage.upload(self._uploaded_file,
                                  self._filename,
                                  self._object_type,
-                                 max_size)
+                                 max_size * MB)
             self._clear = True
 
         if self._clear \
@@ -114,7 +112,7 @@ class AssetUploader(object):
         if is_absolute_http_url(storage_url):
             return storage_url
         return toolkit.url_for('asset_storage.uploaded_file',
-                               file_uri=quote(storage_url, safe=''),
+                               file_uri=quote(storage_url, safe='/'),
                                _external=True)
 
     @staticmethod

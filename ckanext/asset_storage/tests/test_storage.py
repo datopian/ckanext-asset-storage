@@ -3,32 +3,33 @@
 import pytest
 
 from ckanext.asset_storage import storage
+from ckanext.asset_storage.storage.local import LocalStorage
 
 
 def test_get_backend_with_named_backend():
     """Test that loading a named storage backend works
     """
     backend = storage.get_storage('local', {'storage_path': '/tmp'})
-    assert isinstance(backend, storage.LocalStorage)
+    assert isinstance(backend, LocalStorage)
 
 
 def test_get_backend_with_custom_backend():
     """Test that loading a custom storage backend works
     """
-    backend = storage.get_storage('ckanext.asset_storage.storage:LocalStorage',
+    backend = storage.get_storage('ckanext.asset_storage.storage.local:LocalStorage',
                                   {'storage_path': '/tmp'})
-    assert isinstance(backend, storage.LocalStorage)
+    assert isinstance(backend, LocalStorage)
 
 
 def test_get_backend_invalid_custom_name():
     """Test that loading backend fails with specific error if name is invalid
     """
     with pytest.raises(ValueError):
-        storage.get_storage('ckanext.asset_storage.storage.LocalStorage',
+        storage.get_storage('ckanext.asset_storage.storage.local.LocalStorage',
                             {'storage_path': '/tmp'})
 
     with pytest.raises(ValueError):
-        storage.get_storage('ckanext.asset_storage:storage:LocalStorage',
+        storage.get_storage('ckanext.asset_storage.storage:local:LocalStorage',
                             {'storage_path': '/tmp'})
 
 

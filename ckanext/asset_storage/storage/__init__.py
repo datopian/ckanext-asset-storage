@@ -1,19 +1,9 @@
-import logging
 import mimetypes
-import os.path
 from importlib import import_module
-from shutil import copyfileobj
-from typing import Any, BinaryIO, Dict, Optional, Tuple
+from typing import Any, BinaryIO, Dict, Optional
 
-try:
-    from pathlib import Path
-except ImportError:
-    from pathlib2 import Path
-
-NAMED_BACKENDS = {'local': 'ckanext.asset_storage.storage:LocalStorage',
+NAMED_BACKENDS = {'local': 'ckanext.asset_storage.storage.local:LocalStorage',
                   }
-
-_log = logging.getLogger(__name__)
 
 
 def get_storage(backend_type, backend_config):
@@ -86,12 +76,12 @@ class StorageBackend(object):
         """
         raise NotImplementedError("Inheriting classes must implement this")
 
-    def upload(self, stream, name, prefix=None, max_size=None):
+    def upload(self, stream, name, prefix=None, max_bytes=None):
         # type: (BinaryIO, str, Optional[str], Optional[int]) -> int
         """Upload a file and return the number of bytes saved
 
-        If max_size is specified, the storage backend should not accept files
-        larger than that size
+        If max_bytes is specified, the storage backend should not accept files
+        larger than that many bytes
         """
         raise NotImplementedError("Inheriting classes must implement this")
 
@@ -113,62 +103,3 @@ class StorageBackend(object):
         This may not be supported by all storage backends.
         """
         return False
-
-
-class LocalStorage(StorageBackend):
-    """A storage backend for storing assets in the local file system
-    """
-    def __init__(self, storage_path):
-        self._path = storage_path
-
-    def get_storage_uri(self, name, prefix=None):
-        if prefix:
-            return '{}/{}'.format(prefix, name)
-        else:
-            return name
-
-    def upload(self, stream, name, prefix=None, max_size=None):
-        """Save the file in local storage
-        """
-        file_path = self._get_file_path(name, prefix)
-        if not file_path.parent.exists():
-            file_path.parent.mkdir(parents=True)
-
-        with file_path.open('wb') as f:
-            copyfileobj(stream, f)
-        return self.get_storage_uri(name, prefix)
-
-    def download(self, uri):
-        """Download the file from local storage
-        """
-        name, prefix = self._parse_uri(uri)
-        file_path = self._get_file_path(name, prefix)
-        fileobj = file_path.open('rb')
-        return DownloadTarget.send_file(fileobj, name)
-
-    def delete(self, uri):
-        file_path = self._get_file_path(*self._parse_uri(uri))
-        try:
-            file_path.unlink()
-        except OSError as e:
-            _log.warning('Failed to remove local file {}: {}'.format(file_path, e))
-            return False
-        return True
-
-    def _get_file_path(self, name, prefix):
-        # type: (str, Optional[str]) -> Path
-        path = Path(self._path)
-        if prefix:
-            path = path / prefix
-        return path / name
-
-    @staticmethod
-    def _parse_uri(uri):
-        # type: (str) -> Tuple[str, Optional[str]]
-        parts = os.path.split(uri)
-        if len(parts) == 1:
-            return parts[0], None
-        elif len(parts) == 2:
-            return parts[1], parts[0]
-        else:
-            raise ValueError("Invalid file URI for this storage module")

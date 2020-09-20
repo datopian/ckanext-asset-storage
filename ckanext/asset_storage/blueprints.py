@@ -29,4 +29,4 @@ def uploaded_file(file_uri):
                      format(storage_result))
 
 
-blueprint.add_url_rule(u'/asset/<file_uri>', view_func=uploaded_file)
+blueprint.add_url_rule(u'/asset/<path:file_uri>', view_func=uploaded_file)
