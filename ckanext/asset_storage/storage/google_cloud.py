@@ -51,12 +51,12 @@ class GoogleCloudStorage(StorageBackend):
         """
         bucket = self._client.bucket(self._bucket_name)
         blob = bucket.blob(self._get_blob_path(name, prefix))
-        if self._public_read:
-            blob.acl.all().grant_read()
-        else:
-            blob.acl.all().revoke_read()
-
         blob.upload_from_file(stream, content_type=mimetype)
+        if self._public_read:
+            blob.make_public()
+        else:
+            blob.make_private()
+
         return stream.tell()
 
     def download(self, uri):

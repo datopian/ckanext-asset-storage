@@ -45,9 +45,7 @@ CKAN_CONFIG_VALUES := \
 		ckan.datastore.read_url=postgresql://$(DATASTORE_DB_RO_USER):$(DATASTORE_DB_RO_PASSWORD)@localhost/$(DATASTORE_DB_NAME) \
 		ckan.plugins='$(CKAN_LOAD_PLUGINS)' \
 		ckan.storage_path='%(here)s/storage' \
-		solr_url=http://127.0.0.1:8983/solr/ckan \
-		ckanext.asset_storage.backend_type=local \
-		ckanext.asset_storage.backend_options='{"storage_path": "./asset-storage"}'
+		solr_url=http://127.0.0.1:8983/solr/ckan
 
 CKAN_TEST_CONFIG_VALUES := \
 		sqlalchemy.url=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(POSTGRES_DB)_test \

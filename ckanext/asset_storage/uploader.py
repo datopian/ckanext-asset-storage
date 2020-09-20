@@ -1,6 +1,7 @@
 """CKAN Uploader implementation that wraps our storage backends
 """
 import datetime
+import logging
 import mimetypes
 import os
 from typing import Optional, Union
@@ -18,6 +19,8 @@ CONF_BACKEND_CONFIG = 'ckanext.asset_storage.backend_options'
 
 # This is used for typing uploaded file form field wrapper
 UploadedFileWrapper = Union[ALLOWED_UPLOAD_TYPES]
+
+_log = logging.getLogger(__name__)
 
 
 def get_configured_storage():
@@ -75,6 +78,7 @@ class AssetUploader(object):
             self._filename = self._create_uploaded_filename(uploaded_file)
             self._uploaded_file = uploaded_file
             filename = self._get_storage_uri(self._filename, self._object_type)
+            _log.debug("Got a new uploaded asset, file name will be %s", self._filename)
 
         elif self._old_filename and not self._old_filename.startswith('http'):
             if not self._clear:
@@ -85,6 +89,7 @@ class AssetUploader(object):
                 filename = ''
 
         if filename is not None:
+            _log.debug("Updating data_dict before upload: %s set to %s", url_field, filename)
             data_dict[url_field] = filename
 
     def upload(self, max_size=2):
@@ -93,20 +98,26 @@ class AssetUploader(object):
         max_size is the maximum file size to accept in megabytes
         (note that not all backends will support this limitation).
         """
-        if self._uploaded_file:
+        if self._uploaded_file is not None:
+            _log.debug("Initiating file upload for %s, storage is %s", self._filename, self._storage)
             size = get_uploaded_size(self._uploaded_file)
+            _log.debug("Detected file size: %s", size)
             if size and max_size and size > max_size * MB:
                 raise toolkit.ValidationError({'upload': ['File upload too large']})
+
             mimetype = get_uploaded_mimetype(self._uploaded_file)
-            self._storage.upload(_get_underlying_file(self._uploaded_file),
-                                 self._filename,
-                                 self._object_type,
-                                 mimetype=mimetype)
+            _log.debug("Detected file MIME type: %s", mimetype)
+            stored = self._storage.upload(_get_underlying_file(self._uploaded_file),
+                                          self._filename,
+                                          self._object_type,
+                                          mimetype=mimetype)
+            _log.debug("Finished uploading file %s, %d bytes written to storage", self._filename, stored)
             self._clear = True
 
         if self._clear \
                 and self._old_filename \
                 and not is_absolute_http_url(self._old_filename):
+            _log.debug("Clearing old asset file: %s", self._old_filename)
             self._storage.delete(self._old_filename)
 
     def _get_storage_uri(self, filename, prefix):
@@ -195,7 +206,7 @@ def get_uploaded_size(uploaded):
     """
     # Let's try to get the size from the stream first, as it is more reliable
     stream = _get_underlying_file(uploaded)
-    if stream.seekable():
+    if isinstance(stream, file) or (hasattr(stream, 'seekable') and stream.seekable()):
         # Check we're not exceeding max size
         stream.seek(0, os.SEEK_END)
         size = stream.tell()
