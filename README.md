@@ -19,9 +19,9 @@ Requirements
 * You need to have access to a supported Cloud Storage account to store assets in 
 
 Supported Storage Backends include:
-* Google Cloud Storage (NOT YET)
+* Google Cloud Storage
+* Azure Blob Storage
 * AWS S3 (NOT YET)
-* Azure Blob Storage (NOT YET)
 * Local Storage (mainly for testing and fallback purposes)
 
 Installation
@@ -48,12 +48,13 @@ pip install ckanext-asset-storage
 sudo service apache2 reload
 ```
 
-Configuration settings
-----------------------
+Configuring This Extension
+--------------------------
 
+### CKAN INI Options
 The following CKAN configuration options should be set:
 
-### `ckanext.asset_storage.backend_type = 'backend_type'`
+#### `ckanext.asset_storage.backend_type = 'backend_type'`
 
 The storage backend type. The following types are supported out of the box:
 
@@ -68,17 +69,25 @@ example, specifying `ckanext.my_storage.storage:MyStorageClass` will
 try to use `MyStorageClass` in the `ckanext.my_storage.storage` module
 as a storage backend. 
 
-### `ckanext.asset_storage.backend_options = {"some_opt":"value"}`
+#### `ckanext.asset_storage.backend_options = {"some_opt":"value"}`
 
 Options to pass to the storage backend. This should be a Python dict 
 with key-value pairs. 
 
-The specific option keys depend on the storage `backend_type` in use:
+The specific option keys depend on the storage `backend_type` in and 
+are detailed below.
 
-#### `local`
+Available Storage Backends Overview and Settings
+------------------------------------------------
+### `local`
+Stores asset in the local file system. This is not much different from CKAN's 
+built-in behavior, and thus is mostly useful for testing purposes. 
+
+The following configuration options are available:
+
 * `storage_path` - (required, string) the local directory to store files in
 
-#### `google_cloud`
+### `google_cloud`
 To use Google Cloud Storage, you must have an existing Google Cloud project and bucket. You need to obtain a 
 Google Account Key file (a JSON file downloadable from the Google Console) for a user or a service account that
 has "Object Admin" role on the bucket (at the very least they should be able to read, write and delete objcets).   
@@ -96,12 +105,39 @@ The following configuration options are available:
 * `signed_url_lifetime` - (int, default `3600`) When public access is not allowed, this sets the max lifetime in seconds
   of signed URLs. Typically you should not change this. 
 
-#### `azure_blobs`
+### `azure_blobs`
+To use Azure Blob Storage, you must have an existing Azure account and Blob Storage container.  
+By default, Azure Blob Storage containers are set to disallow public access to blobs, and this is 
+not configurable at the blob level - only on the container level. For this reason, this storage
+backend provides public URLs if and only if the container is configured to [allow public access 
+to blobs](https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-configure?tabs=portal). 
+If public access is enabled, asset URLs will be direct-to-cloud public URLs. Otherwise, asset 
+URLs will point to CKAN, which will generate a time-limited SAS signed URL, and redirect the 
+client to that URL.
+
+The following configuration options are available:
+
+* `container_name` - Azure Blob Storage container name
+* `connection_string` - The Azure Blob Storage connection string to use
+* `path_prefix`  - A prefix to prepend to all stored assets in the container
+* `signed_url_lifetime` - When public access is not allowed, this sets the max lifetime of signed URLs.
+
+### `s3`
 TBD
 
-#### `s3`
-TBD
+Frequently Asked Questions
+--------------------------
+#### Q: Can I use the same CLoud container / bucket for assets and resources?
+A: If you use a CKAN extension that stores resources in cloud storage (such
+as [`ckanext-blob-storage`](https://github.com/datopian/ckanext-blob-storage)), 
+and you already have a cloud container configured for storing assets, it should 
+be very easy to reuse the same container to store assets if that is desired. 
 
+Simply configure your storage backend to store assets under a path prefix (e.g. 
+see the `path_prefix` config option for most cloud backends), and use a prefix
+that will never be used by your resource storage extension to store resources.
+
+For example, setting `path_prefix` to `_assets` will do the trick in most cases.  
 
 Developer installation
 ----------------------

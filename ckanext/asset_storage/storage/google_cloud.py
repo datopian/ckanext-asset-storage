@@ -47,7 +47,7 @@ class GoogleCloudStorage(StorageBackend):
             return name
 
     def upload(self, stream, name, prefix=None, mimetype=None):
-        """Save the file in local storage
+        """Save the file in storage
         """
         bucket = self._client.bucket(self._bucket_name)
         blob = bucket.blob(self._get_blob_path(name, prefix))
