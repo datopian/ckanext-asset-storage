@@ -4,7 +4,6 @@ import datetime
 import logging
 import mimetypes
 import os
-import io
 from typing import Optional, Union
 
 from ckan.lib.munge import munge_filename_legacy
