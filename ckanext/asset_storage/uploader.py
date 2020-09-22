@@ -4,6 +4,7 @@ import datetime
 import logging
 import mimetypes
 import os
+import io
 from typing import Optional, Union
 
 from ckan.lib.munge import munge_filename_legacy
@@ -204,14 +205,15 @@ def get_uploaded_size(uploaded):
     This may not work for all uploaded file types, in which case None will
     be returned
     """
-    # Let's try to get the size from the stream first, as it is more reliable
+    # Let's try to get the size from the stream first, as it is more reliable and secure
     stream = _get_underlying_file(uploaded)
-    if isinstance(stream, file) or (hasattr(stream, 'seekable') and stream.seekable()):
-        # Check we're not exceeding max size
+    try:
         stream.seek(0, os.SEEK_END)
         size = stream.tell()
         stream.seek(0)
         return size
+    except (AttributeError, IOError):  # no seek / non-seekable stream
+        pass
 
     try:
         # FlaskFileStorage / cgi.FieldStorage
