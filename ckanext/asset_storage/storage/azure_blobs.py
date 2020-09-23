@@ -4,12 +4,13 @@ from typing import Optional
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings  # type: ignore
 from azure.storage.blob import BlobClient, BlobSasPermissions, BlobServiceClient, generate_blob_sas
+
+from ckanext.asset_storage.storage import DownloadTarget, StorageBackend, exc
+
 try:
     from dateutil.tz import UTC
 except ImportError:
     from pytz import UTC
-
-from ckanext.asset_storage.storage import DownloadTarget, StorageBackend, exc
 
 
 class AzureBlobStorage(StorageBackend):
