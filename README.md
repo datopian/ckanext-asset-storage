@@ -127,7 +127,7 @@ TBD
 
 Frequently Asked Questions
 --------------------------
-#### Q: Can I use the same CLoud container / bucket for assets and resources?
+#### Q: Can I use the same Cloud container / bucket for assets and resources?
 A: If you use a CKAN extension that stores resources in cloud storage (such
 as [`ckanext-blob-storage`](https://github.com/datopian/ckanext-blob-storage)), 
 and you already have a cloud container configured for storing assets, it should 

@@ -4,7 +4,10 @@ from typing import Optional
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings  # type: ignore
 from azure.storage.blob import BlobClient, BlobSasPermissions, BlobServiceClient, generate_blob_sas
-from dateutil import tz
+try:
+    from dateutil.tz import UTC
+except ImportError:
+    from pytz import UTC
 
 from ckanext.asset_storage.storage import DownloadTarget, StorageBackend, exc
 
@@ -93,7 +96,7 @@ class AzureBlobStorage(StorageBackend):
     def _get_signed_url(self, blob, expires_in):
         # type: (BlobClient, int) -> str
         permissions = BlobSasPermissions(read=True)
-        token_expires = (datetime.now(tz=tz.UTC) + timedelta(seconds=expires_in))
+        token_expires = (datetime.now(tz=UTC) + timedelta(seconds=expires_in))
 
         sas_token = generate_blob_sas(account_name=blob.account_name,
                                       account_key=blob.credential.account_key,

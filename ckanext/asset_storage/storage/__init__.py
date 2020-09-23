@@ -13,7 +13,7 @@ def get_storage(backend_type, backend_config):
     try:
         module_name, factory_name = backend_type.split(':')
     except ValueError:
-        raise ValueError('Invalid backend name: expecting either a name'
+        raise ValueError('Invalid backend name: expecting either a name '
                          'backend, or a callable designated in the format '
                          '`package.module:class`')
 
