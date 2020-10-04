@@ -123,7 +123,68 @@ The following configuration options are available:
 * `signed_url_lifetime` - When public access is not allowed, this sets the max lifetime of signed URLs.
 
 ### `s3`
-TBD
+When `s3` support is available, we will add some documentation here ;-)
+
+Migrating Static Assets from Existing CKAN Installations
+--------------------------------------------------------
+When this extension is enabled on an existing CKAN installation, existing organization
+and group images will most likely need to be migrated to avoid re-uploading all images. 
+The following steps are suggested as a migration procedure:
+
+### Migration Overview
+* **It is highly recommended** to not delete any of your old storage files or configuration until it has been ensured
+that migration has completed successfully. If you plan to make DB changes (see below), back up your database in advance.  
+* Externally referenced ("URL") assets do not need to be migrated. You only need to migrate images which have been 
+uploaded to CKAN. 
+* If you have used a cloud storage extension which saved the absolute canonical URLs of assets in the CKAN DB, you
+may continue to use these assets without any migration as long as the old storage is not deleted. New assets will be
+saved in the `ckanext-asset-storage` storage. 
+* As a general rule, you should be able to seamlessly migrate to `ckanext-asset-storage` by copying files from the 
+old storage path / container while retaining directory structure and file names to the new storage container. The new
+location should match your configured path container / `path_prefix` if any.   
+* If that is not possible, you will need to copy all files to a new location, and then write a script to modify the CKAN
+database to point to the new location of the files. 
+
+### Migrating from vanilla CKAN storage
+* Check your CKAN INI file for the configured local storage directory (`ckan.storage_path`)
+* Recursively copy all files from `<storage_path>/storage/uploads/*` to your new storage location
+  * Your new storage location depends on your selected storage backend and configuration. For example, when using GCP
+    your storage location will be `gs://<bucket_name>/<path_prefix>/`
+  * Note that subdirectories under `<storage_path>/storage/uploads/` (e.g. `group`) should be retained and copied as-is
+    to the new storage path
+
+### Migrating from other CKAN cloud storage extensions
+These instructions are generic, as specifics may differ between different CKAN cloud storage extensions. 
+
+**NOTE**: If you plan to use the same bucket / container you have used in the past with `ckanex-asset-storage`, you may 
+not need to migrate anything as long as you configure `ckanext-asset-storage` to point to the same location. 
+
+* Copy all files from your current storage location to the new location; This is similar in concept to the process 
+  described above for vanilla CKAN. 
+* If your old storage extension stores the full absolute URL of images in the DB, and the URL does not point to 
+  the `/uploads/...` path under your CKAN public URL, you will need to run a script that modifies the URLs stored in 
+  the DB to match the new URL pattern for assets
+  * You can check if this is the case by running `SELECT id, image_url FROM "group"` on your DB, and looking at the 
+    results, but take special care of ignoring URLs that point to externally stored images, as these *do not need to be 
+    migrated*. 
+  * In most cases, stripping `image_url` to just the `subdirectory/filename.ext` form (removing any scheme, host, port 
+    and path prefix from the URL) will do the trick.
+* If your old storage extension stores a relative path to the image of the form `subdirectory/filename.ext`, you do 
+  not need to modify your database. Things should "just work".
+
+### "Downtime" considerations during migration
+In high-traffic or mission critical CKAN sites, you may be in risk that new assets are uploaded to storage while 
+migration is in progress. If this is a risk you cannot afford, read on: 
+
+* In many cases, group and organization images are not mission critical and you can afford to have some of your users 
+visiting your CKAN instance while images are not displayed. If this is the case, it is recommended to switch your CKAN
+installation to `ckanext-asset-storage` *before* migrating the data. This will ensure new assets uploaded while the 
+migration is in progress are saved to the new storage. Once migration is complete, group and organization images will 
+re-appear and everything will be back to normal.   
+* If you want to make sure images are *always* displayed even during migration, you have a couple of options:
+  * Lock your CKAN instance for changes to organizations and groups until migration is complete (TODO: how?)
+  * or, aim for eventual consistency by running migration, switching to `ckanext-asset-storage` and then running 
+  migration again to ensure nothing has been left behind. 
 
 Frequently Asked Questions
 --------------------------
