@@ -9,7 +9,7 @@ from ckanext.asset_storage.blueprints import blueprint
 
 class AssetStoragePlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
-    plugins.implements(plugins.IUploader, inherit=True)
+    plugins.implements(plugins.IUploader)
     plugins.implements(plugins.IBlueprint)
 
     # IConfigurer
@@ -37,3 +37,8 @@ class AssetStoragePlugin(plugins.SingletonPlugin):
         return uploader.AssetUploader(object_type=upload_to,
                                       old_filename=old_filename,
                                       storage=uploader.get_configured_storage())
+
+    def get_resource_uploader(self, data_dict):
+        """We do not handle resource uploading in this extension
+        """
+        return None
