@@ -21,6 +21,8 @@ CKAN_CLI := $(shell which ckan | head -n1)
 TEST_INI_PATH := ./test.ini
 SENTINELS := .make-status
 
+PACKAGE_TAG_PREFIX := "v"
+PACKAGE_TAG_SUFFIX := ""
 PYTHON_VERSION := $(shell $(PYTHON) -c 'import sys; print(sys.version_info[0])')
 
 # CKAN environment variables
@@ -51,6 +53,8 @@ CKAN_TEST_CONFIG_VALUES := \
 		sqlalchemy.url=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(POSTGRES_DB)_test \
 		ckan.datastore.write_url=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(DATASTORE_DB_NAME)_test \
 		ckan.datastore.read_url=postgresql://$(DATASTORE_DB_RO_USER):$(DATASTORE_DB_RO_PASSWORD)@localhost/$(DATASTORE_DB_NAME)_test
+
+PACKAGE_VERSION := $(shell $(PYTHON) -c 'import $(PACKAGE_NAME) as p; print(p.__version__)')
 
 ifdef WITH_COVERAGE
   COVERAGE_ARG := --cov=$(PACKAGE_NAME)
@@ -96,6 +100,12 @@ else
 	$(PASTER) --plugin=ckan serve --reload --monitor-restart $(CKAN_CONFIG_FILE)
 endif
 .PHONY: ckan-start
+
+## Create a version tag
+version-tag:
+	@echo "Creating tag: $(PACKAGE_TAG_PREFIX)$(PACKAGE_VERSION)$(PACKAGE_TAG_SUFFIX)"
+	$(GIT) tag "$(PACKAGE_TAG_PREFIX)$(PACKAGE_VERSION)$(PACKAGE_TAG_SUFFIX)"
+	$(GIT) push --tags
 
 $(CKAN_PATH):
 	$(GIT) clone $(CKAN_REPO_URL) $@
