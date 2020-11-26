@@ -13,15 +13,15 @@ def get_storage(backend_type, backend_config):
     try:
         module_name, factory_name = backend_type.split(':')
     except ValueError:
-        raise ValueError('Invalid backend name: expecting either a name '
-                         'backend, or a callable designated in the format '
-                         '`package.module:class`')
+        raise ValueError('Invalid backend type `{}`; expecting either a named backend, or a callable '
+                         'designated in the format `package.module:class`'.format(backend_type))
 
     try:
         module = import_module(module_name, __package__)
         factory = getattr(module, factory_name)
-    except (ImportError, AttributeError):
-        raise ValueError('Invalid backend name: unable to import {}'.format(backend_type))
+    except (ImportError, AttributeError) as e:
+        raise ValueError('Invalid backend type `{}`: unable to import {}; Error was: {}'.format(
+            backend_type, backend_type, e))
 
     try:
         return factory(**backend_config)
