@@ -25,6 +25,7 @@ googleapis-common-protos==1.52.0  # via google-api-core
 idna==2.10                # via requests
 ipaddress==1.0.23         # via cryptography
 isodate==0.6.0            # via msrest
+memoized-property==1.0.3  # via -r requirements.in
 msrest==0.6.19            # via azure-storage-blob
 oauthlib==3.1.0           # via requests-oauthlib
 protobuf==3.13.0          # via google-api-core, googleapis-common-protos

@@ -1,6 +1,7 @@
 six==1.14.*
 typing==3.7.*
 python-dateutil==2.*
+memoized-property==1.*
 
 # Storage backend dependencies
 # TODO: Split these out so users don't have to install all of them

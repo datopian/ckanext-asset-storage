@@ -13,6 +13,13 @@ def test_get_backend_with_named_backend():
     assert isinstance(backend, LocalStorage)
 
 
+def test_get_backend_with_named_backend_unicode():
+    """Test that loading a named storage backend works
+    """
+    backend = storage.get_storage(u'local', {'storage_path': '/tmp'})
+    assert isinstance(backend, LocalStorage)
+
+
 def test_get_backend_with_custom_backend():
     """Test that loading a custom storage backend works
     """

@@ -4,6 +4,7 @@ from typing import Optional
 from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings  # type: ignore
 from azure.storage.blob import BlobClient, BlobSasPermissions, BlobServiceClient, generate_blob_sas
+from memoized_property import memoized_property
 
 from ckanext.asset_storage.storage import DownloadTarget, StorageBackend, exc
 
@@ -43,13 +44,11 @@ class AzureBlobStorage(StorageBackend):
 
         self._svc_client = BlobServiceClient.from_connection_string(connection_string)
         self._container_client = self._svc_client.get_container_client(container_name)
-        self._public_read = (self._container_client.get_container_access_policy().get('public_access')
-                             in {'container', 'blob'})
 
     def get_storage_uri(self, name, prefix=None):
         """Get the URL of the file in storage
         """
-        if self._public_read:
+        if self._is_public_read:
             blob = self._blob_client(name, prefix)
             return blob.url
         elif prefix:
@@ -112,6 +111,10 @@ class AzureBlobStorage(StorageBackend):
                                  credential=sas_token)
 
         return blob_client.url  # type: ignore
+
+    @memoized_property
+    def _is_public_read(self):
+        return self._container_client.get_container_access_policy().get('public_access') in {'container', 'blob'}
 
     @staticmethod
     def _blob_exists(blob):
