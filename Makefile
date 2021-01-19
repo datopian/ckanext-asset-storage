@@ -10,6 +10,7 @@ PIP_COMPILE := pip-compile
 PYTEST := pytest
 PASTER := paster
 DOCKER_COMPOSE := docker-compose
+PSQL := psql
 GIT := git
 
 # Find GNU sed in path (on OS X gsed should be preferred)
@@ -160,6 +161,17 @@ dev-setup: _check_virtualenv $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(
 ## Start a full development environment
 dev-start: dev-setup docker-up ckan-start
 .PHONY: start-dev
+
+## Create the database for test running
+create-test-db:
+	@echo " \
+    	CREATE ROLE $(DATASTORE_DB_RO_USER) NOSUPERUSER NOCREATEDB NOCREATEROLE LOGIN PASSWORD '$(DATASTORE_DB_RO_PASSWORD)'; \
+    	CREATE DATABASE $(DATASTORE_DB_NAME)_test OWNER $(POSTGRES_USER) ENCODING 'utf-8'; \
+    	CREATE DATABASE $(POSTGRES_DB)_test OWNER $(POSTGRES_USER) ENCODING 'utf-8'; \
+    	GRANT ALL PRIVILEGES ON DATABASE $(DATASTORE_DB_NAME)_test TO $(POSTGRES_USER);  \
+    	GRANT ALL PRIVILEGES ON DATABASE $(POSTGRES_DB)_test TO $(POSTGRES_USER);  \
+    " | PGPASSWORD=$(POSTGRES_PASSWORD) $(PSQL) -h $(POSTGRES_HOST) --username "$(POSTGRES_USER)"
+.PHONY: create-test-db
 
 # Private targets
 
