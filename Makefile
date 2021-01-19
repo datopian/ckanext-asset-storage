@@ -31,10 +31,12 @@ CKAN_PATH := ckan
 CKAN_REPO_URL := https://github.com/ckan/ckan.git
 CKAN_VERSION := ckan-2.8.3
 CKAN_CONFIG_FILE := $(CKAN_PATH)/development.ini
+CKAN_INI_TEMPLATE_FILE := $(CKAN_PATH)/ckan/config/deployment.ini_tmpl
 CKAN_SITE_URL := http://localhost:5000
 POSTGRES_USER := ckan
 POSTGRES_PASSWORD := ckan
 POSTGRES_DB := ckan
+POSTGRES_HOST := 127.0.0.1
 CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
@@ -112,11 +114,12 @@ $(CKAN_PATH):
 	$(GIT) clone $(CKAN_REPO_URL) $@
 
 $(CKAN_CONFIG_FILE): $(SENTINELS)/ckan-installed $(SENTINELS)/develop | _check_virtualenv
-	$(PASTER) make-config --no-interactive ckan $(CKAN_CONFIG_FILE)
 ifdef CKAN_CLI
+	cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
 else
+	$(PASTER) make-config --no-interactive ckan $(CKAN_CONFIG_FILE)
 	$(PASTER) --plugin=ckan config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
 	$(PASTER) --plugin=ckan config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
 endif
@@ -176,7 +179,7 @@ create-test-db:
 # Private targets
 
 _check_virtualenv:
-	@if [ -z "$(VIRTUAL_ENV)" ]; then \
+	@if [ -z "$(VIRTUAL_ENV)" ] && [ -z "$(USE_GLOBAL_PYTHON_ENV)"]; then \
 	  echo "You are not in a virtual environment - activate your virtual environment first"; \
 	  exit 1; \
 	fi
