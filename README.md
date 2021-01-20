@@ -1,6 +1,6 @@
 ckanext-asset-storage
 ========================
-[![Build Status](https://travis-ci.org/datopian/ckanext-asset-storage.svg?branch=master)](https://travis-ci.org/datopian/ckanext-asset-storage)
+[![Tests Status](https://github.com/datopian/ckanext-asset-storage/workflows/All%20Tests/badge.svg)](https://github.com/datopian/ckanext-asset-storage/actions?query=workflow%3A%22All+Tests%22)
 [![Coverage Status](https://coveralls.io/repos/github/datopian/ckanext-asset-storage/badge.svg?branch=master)](https://coveralls.io/github/datopian/ckanext-asset-storage?branch=master)
 
 **Store CKAN assets (org / group images) to cloud storage**

@@ -10,6 +10,7 @@ PIP_COMPILE := pip-compile
 PYTEST := pytest
 PASTER := paster
 DOCKER_COMPOSE := docker-compose
+PSQL := psql
 GIT := git
 
 # Find GNU sed in path (on OS X gsed should be preferred)
@@ -30,10 +31,12 @@ CKAN_PATH := ckan
 CKAN_REPO_URL := https://github.com/ckan/ckan.git
 CKAN_VERSION := ckan-2.8.3
 CKAN_CONFIG_FILE := $(CKAN_PATH)/development.ini
+CKAN_INI_TEMPLATE_FILE := $(CKAN_PATH)/ckan/config/deployment.ini_tmpl
 CKAN_SITE_URL := http://localhost:5000
 POSTGRES_USER := ckan
 POSTGRES_PASSWORD := ckan
 POSTGRES_DB := ckan
+POSTGRES_HOST := 127.0.0.1
 CKAN_SOLR_PASSWORD := ckan
 DATASTORE_DB_NAME := datastore
 DATASTORE_DB_RO_USER := datastore_ro
@@ -111,11 +114,12 @@ $(CKAN_PATH):
 	$(GIT) clone $(CKAN_REPO_URL) $@
 
 $(CKAN_CONFIG_FILE): $(SENTINELS)/ckan-installed $(SENTINELS)/develop | _check_virtualenv
-	$(PASTER) make-config --no-interactive ckan $(CKAN_CONFIG_FILE)
 ifdef CKAN_CLI
+	cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
 else
+	$(PASTER) make-config --no-interactive ckan $(CKAN_CONFIG_FILE)
 	$(PASTER) --plugin=ckan config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
 	$(PASTER) --plugin=ckan config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
 endif
@@ -161,10 +165,21 @@ dev-setup: _check_virtualenv $(SENTINELS)/ckan-installed $(CKAN_PATH)/who.ini $(
 dev-start: dev-setup docker-up ckan-start
 .PHONY: start-dev
 
+## Create the database for test running
+create-test-db:
+	@echo " \
+    	CREATE ROLE $(DATASTORE_DB_RO_USER) NOSUPERUSER NOCREATEDB NOCREATEROLE LOGIN PASSWORD '$(DATASTORE_DB_RO_PASSWORD)'; \
+    	CREATE DATABASE $(DATASTORE_DB_NAME)_test OWNER $(POSTGRES_USER) ENCODING 'utf-8'; \
+    	CREATE DATABASE $(POSTGRES_DB)_test OWNER $(POSTGRES_USER) ENCODING 'utf-8'; \
+    	GRANT ALL PRIVILEGES ON DATABASE $(DATASTORE_DB_NAME)_test TO $(POSTGRES_USER);  \
+    	GRANT ALL PRIVILEGES ON DATABASE $(POSTGRES_DB)_test TO $(POSTGRES_USER);  \
+    " | PGPASSWORD=$(POSTGRES_PASSWORD) $(PSQL) -h $(POSTGRES_HOST) --username "$(POSTGRES_USER)"
+.PHONY: create-test-db
+
 # Private targets
 
 _check_virtualenv:
-	@if [ -z "$(VIRTUAL_ENV)" ]; then \
+	@if [ -z "$(VIRTUAL_ENV)" ] && [ -z "$(USE_GLOBAL_PYTHON_ENV)"]; then \
 	  echo "You are not in a virtual environment - activate your virtual environment first"; \
 	  exit 1; \
 	fi
