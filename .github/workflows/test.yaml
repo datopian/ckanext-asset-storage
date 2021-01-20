@@ -68,12 +68,8 @@ jobs:
         run: make create-test-db dev-setup
       - name: Run tests
         run: make test WITH_COVERAGE=1
-#      - name: Create Coverage Report
-#        run: |
-#          pip install coveralls
-#          coveralls
       - name: Report to Coveralls
-        uses: coverallsapp/github-action@master
+        uses: AndreMiras/coveralls-python-action@v20201129
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           flag-name: "CKAN ${{ matrix.ckan-version }} / Python ${{matrix.python-version}} (${{ matrix.test_number }})"
@@ -84,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      uses: coverallsapp/github-action@master
+      uses: AndreMiras/coveralls-python-action@v20201129
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true
