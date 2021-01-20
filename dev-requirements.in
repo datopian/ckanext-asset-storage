@@ -1,7 +1,7 @@
 pip-tools==5.*
 pytest==4.6.*
 pytest-ckan==0.0.*
-pytest-cov==2.8.*
+pytest-cov==2.11.*
 pytest-flake8==1.0.*
 pytest-isort==0.3.*
 isort<5.0.0
