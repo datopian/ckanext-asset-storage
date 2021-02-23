@@ -36,7 +36,7 @@ class AzureBlobStorage(StorageBackend):
             container_name: Azure Blob Storage container name
             connection_string: The Azure Blob Storage connection string to use
             path_prefix: A prefix to prepend to all stored assets in the container
-            signed_url_lifetime: When public access is not allowed, this sets the max lifetime of signed URLs.
+            signed_url_lifetime: When public access is disabled, this sets the max lifetime in seconds of signed URLs
         """
         # self._container_name = container_name
         self._path_prefix = path_prefix
