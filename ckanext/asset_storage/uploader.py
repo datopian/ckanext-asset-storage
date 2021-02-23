@@ -74,7 +74,7 @@ class AssetUploader(object):
         uploaded_file = data_dict.pop(file_field, None)
         filename = None
 
-        if isinstance(uploaded_file, ALLOWED_UPLOAD_TYPES):
+        if uploaded_file and isinstance(uploaded_file, ALLOWED_UPLOAD_TYPES):
             self._filename = self._create_uploaded_filename(uploaded_file)
             self._uploaded_file = uploaded_file
             filename = self._get_storage_uri(self._filename, self._object_type)
