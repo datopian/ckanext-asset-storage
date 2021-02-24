@@ -74,7 +74,7 @@ class AssetUploader(object):
         uploaded_file = data_dict.pop(file_field, None)
         filename = None
 
-        if uploaded_file and isinstance(uploaded_file, ALLOWED_UPLOAD_TYPES):
+        if _is_uploaded_file_field(uploaded_file):
             self._filename = self._create_uploaded_filename(uploaded_file)
             self._uploaded_file = uploaded_file
             filename = self._get_storage_uri(self._filename, self._object_type)
@@ -159,6 +159,21 @@ class AssetUploader(object):
 
         if url.startswith(pattern_parts[0]) and url.endswith(pattern_parts[1]):
             return decode_uri(url[len(pattern_parts[0])][:-len(pattern_parts[1])])
+
+
+def _is_uploaded_file_field(field):
+    """Check if a given value is an uploaded file field with an actual uploaded file
+
+    This should work on different CKAN / Python versions
+    """
+    if not isinstance(field, ALLOWED_UPLOAD_TYPES):
+        return False
+
+    if field:
+        return True
+
+    # cgi.FieldStorage is False-ish even if it exists and contains an uploaded file :`(
+    return hasattr(field, 'filename') and field.filename
 
 
 def decode_uri(uri):
