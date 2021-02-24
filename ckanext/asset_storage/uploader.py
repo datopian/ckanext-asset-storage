@@ -25,8 +25,14 @@ _log = logging.getLogger(__name__)
 
 def get_configured_storage():
     # type: () -> StorageBackend
-    backend_type = toolkit.config.get(CONF_BACKEND_TYPE, 'local')
+    backend_type = toolkit.config.get(CONF_BACKEND_TYPE)
     config = toolkit.config.get(CONF_BACKEND_CONFIG, {})
+    if not backend_type:
+        backend_type = 'local'
+
+    if backend_type == 'local' and not config:
+        config = {'storage_path': toolkit.config.get('ckan.storage_path')}
+
     return get_storage(backend_type=backend_type, backend_config=config)
 
 
