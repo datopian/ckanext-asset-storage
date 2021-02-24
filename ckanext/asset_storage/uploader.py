@@ -175,8 +175,12 @@ def _is_uploaded_file_field(field):
     if not isinstance(field, ALLOWED_UPLOAD_TYPES):
         return False
 
-    if field:
-        return True
+    # In Python 3.x (only), cgi.FieldStorage will raise if cased to bool
+    try:
+        if field:
+            return True
+    except TypeError:
+        pass
 
     # cgi.FieldStorage is False-ish even if it exists and contains an uploaded file :`(
     return hasattr(field, 'filename') and field.filename
