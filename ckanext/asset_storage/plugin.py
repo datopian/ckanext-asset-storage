@@ -22,8 +22,10 @@ class AssetStoragePlugin(plugins.SingletonPlugin):
         backend_config = config.get(uploader.CONF_BACKEND_CONFIG)
         if not backend_config:
             backend_config = {}
-        else:
+
+        if type(backend_config) == str:
             backend_config = literal_eval(backend_config)
+
         config[uploader.CONF_BACKEND_CONFIG] = backend_config
 
     # IBlueprint
