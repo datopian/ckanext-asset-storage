@@ -1,9 +1,8 @@
-import six
-
 from ast import literal_eval
 
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import six
 
 from ckanext.asset_storage import uploader
 from ckanext.asset_storage.blueprints import blueprint
