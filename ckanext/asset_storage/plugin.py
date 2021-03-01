@@ -2,6 +2,7 @@ from ast import literal_eval
 
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import six
 
 from ckanext.asset_storage import uploader
 from ckanext.asset_storage.blueprints import blueprint
@@ -22,8 +23,9 @@ class AssetStoragePlugin(plugins.SingletonPlugin):
         backend_config = config.get(uploader.CONF_BACKEND_CONFIG)
         if not backend_config:
             backend_config = {}
-        else:
+        elif isinstance(backend_config, six.string_types):
             backend_config = literal_eval(backend_config)
+
         config[uploader.CONF_BACKEND_CONFIG] = backend_config
 
     # IBlueprint
