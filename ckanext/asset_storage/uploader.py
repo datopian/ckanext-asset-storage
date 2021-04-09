@@ -63,6 +63,10 @@ class AssetUploader(object):
         if old_filename:
             self._old_filename = self._parse_old_uri(old_filename)
 
+    @property
+    def filename(self):
+        return self._filename
+
     def update_data_dict(self, data_dict, url_field, file_field, clear_field):
         """Manipulate data from the data_dict. This needs to be called before it
         reaches any validators.
