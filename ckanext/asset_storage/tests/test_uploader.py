@@ -100,3 +100,9 @@ def test_uploader_update_data_dict_existing_file_cgi():
     up.update_data_dict(data_dict, 'url', 'file', 'clear')
     assert data_dict['url'].startswith('http://localhost:5000/uploads/group/')
     assert data_dict['url'].endswith('-foo.png')
+
+
+def test_uploader_property():
+    backend = uploader.get_configured_storage()
+    up = uploader.AssetUploader(backend, 'group', 'original.png')
+    assert up.filename == 'original.png'
