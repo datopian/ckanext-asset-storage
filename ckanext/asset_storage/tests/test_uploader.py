@@ -110,4 +110,4 @@ def test_uploader_property():
                  'file': FieldStorage(fp=BytesIO(b'hello'),
                                       headers={"content-disposition": 'form-data; name="file"; filename="foo.png"'})}
     up.update_data_dict(data_dict, 'url', 'file', 'clear')
-    assert up.filename == 'foo.png'
+    assert up.filename.endswith('-foo.png')
