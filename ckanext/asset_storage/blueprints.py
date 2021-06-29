@@ -22,7 +22,12 @@ def uploaded_file(file_uri):
     try:
         storage_result = storage.download(decode_uri(file_uri))
     except exc.ObjectNotFound:
-        return toolkit.abort(404, "The requested asset was not found in storage")
+        return toolkit.abort(
+            404,
+            "The requested asset was not found in storage: {}".format(
+                decode_uri(file_uri)
+            ),
+        )
 
     if storage_result.fileobj:
         # File-like object, just serve it
