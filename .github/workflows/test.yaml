@@ -46,16 +46,16 @@ jobs:
     strategy:
       matrix:
         python-version: [ 2.7, 3.6, 3.7 ]
-        ckan-version: [ 2.8, 2.9, 2.10 ]
+        ckan-version: [ 2.8, 2.9, "2.10" ]
         exclude:
           - python-version: 3.6
             ckan-version: 2.8
           - python-version: 3.7
             ckan-version: 2.8
           - python-version: 2.7
-            ckan-version: 2.10
+            ckan-version: "2.10"
           - python-version: 3.6
-            ckan-version: 2.10
+            ckan-version: "2.10"
     env:
       CKAN_PATH: ./ckan
       USE_GLOBAL_PYTHON_ENV: "1"  # we won't be using a virtual environment
