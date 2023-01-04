@@ -49,7 +49,7 @@ jobs:
           pip install -r requirements.txt
           ckan -c test.ini db init
       - name: Run tests
-        run: pytest --ckan-ini=test.ini --cov=ckanext.blob_storage --disable-warnings ckanext/blob_storage/tests
+        run: pytest --ckan-ini=test.ini --cov=ckanext.asset_storage --disable-warnings ckanext/asset_storage/tests
       - name: Report to Coveralls
         uses: AndreMiras/coveralls-python-action@v20201129
         with:
