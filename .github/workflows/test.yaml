@@ -10,69 +10,52 @@ on:
 jobs:
   test:
     runs-on: ubuntu-20.04
-
-    services:
-      postgres:
-        image: postgres:11-alpine
-        env:
-          POSTGRES_PASSWORD: ckan
-          POSTGRES_USER: ckan
-          POSTGRES_DB: ckan
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      solr:
-        image: ckan/solr
-        env:
-          CKAN_SOLR_PASSWORD: ckan
-        ports:
-          - 8983:8983
-
     strategy:
       matrix:
-        python-version: [ 2.7, 3.6, 3.7 ]
-        ckan-version: [ 2.8, 2.9, "dev-v2.10" ]
-        exclude:
-          - python-version: 3.6
-            ckan-version: 2.8
-          - python-version: 3.7
-            ckan-version: 2.8
-          - python-version: 2.7
-            ckan-version: "dev-v2.10"
-          - python-version: 3.6
-            ckan-version: "dev-v2.10"
+        python-version: [ 3.8, 3.9 ]
+        ckan-version: [ "2.9", "2.10" ]
       fail-fast: false
+    name: CKAN ${{ matrix.ckan-version }}
+    runs-on: ubuntu-latest
+    container:
+      image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
+    services:
+      solr:
+        image: ckan/ckan-solr:${{ matrix.ckan-version }}
+      postgres:
+        image: ckan/ckan-postgres-dev:${{ matrix.ckan-version }}
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+          image: redis:3
     env:
-      CKAN_PATH: ./ckan
-      USE_GLOBAL_PYTHON_ENV: "1"  # we won't be using a virtual environment
+      CKAN_SQLALCHEMY_URL: postgresql://ckan_default:pass@postgres/ckan_test
+      CKAN_DATASTORE_WRITE_URL: postgresql://datastore_write:pass@postgres/datastore_test
+      CKAN_DATASTORE_READ_URL: postgresql://datastore_read:pass@postgres/datastore_test
+      CKAN_SOLR_URL: http://solr:8983/solr/ckan
+      CKAN_REDIS_URL: redis://redis:6379/1
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install CKAN
-        run: make ckan-install CKAN_VERSION=${{ matrix.ckan-version }}
-      - name: Set up the test environment
-        run: make create-test-db dev-setup
+      - name: Install extension
+        run: |
+          pip install -e .
+          # Replace default path to CKAN core config file with the one on the container
+          sed -i -e 's/use = config:.*/use = config:\/srv\/app\/src\/ckan\/test-core.ini/' test.ini
+      - name: Setup extension
+        run: |
+          pip install -r dev-requirements.txt
+          pip install -r requirements.txt
+          ckan -c test.ini db init
       - name: Run tests
-        run: make test WITH_COVERAGE=1
+        run: pytest --ckan-ini=test.ini --cov=ckanext.blob_storage --disable-warnings ckanext/blob_storage/tests
       - name: Report to Coveralls
         uses: AndreMiras/coveralls-python-action@v20201129
         with:
