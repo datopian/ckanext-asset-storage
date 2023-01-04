@@ -16,7 +16,6 @@ jobs:
         ckan-version: [ "2.9", "2.10" ]
       fail-fast: false
     name: CKAN ${{ matrix.ckan-version }}
-    runs-on: ubuntu-latest
     container:
       image: openknowledge/ckan-dev:${{ matrix.ckan-version }}
     services:
