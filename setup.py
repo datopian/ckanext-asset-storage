@@ -58,7 +58,6 @@ setup(
     namespace_packages=['ckanext'],
 
     install_requires=[
-        'six',
         'typing',
     ],
 

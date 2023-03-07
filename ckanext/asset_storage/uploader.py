@@ -10,7 +10,7 @@ from ckan.lib.munge import munge_filename_legacy
 from ckan.lib.uploader import _get_underlying_file  # noqa
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES, MB
 from ckan.plugins import toolkit
-from six.moves.urllib_parse import quote, unquote
+from urllib.parse import quote, unquote
 
 from ckanext.asset_storage.storage import StorageBackend, get_storage
 
