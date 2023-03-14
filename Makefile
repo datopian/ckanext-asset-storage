@@ -162,7 +162,7 @@ $(SENTINELS)/ckan-version: $(CKAN_PATH) | _check_virtualenv $(SENTINELS)
 	if [ -e $(CKAN_PATH)/requirement-setuptools.txt ]; then $(PIP) install -r $(CKAN_PATH)/requirement-setuptools.txt; fi
 	$(PIP) install -r $(CKAN_PATH)/requirements.txt
 	$(PIP) install -r $(CKAN_PATH)/dev-requirements.txt
-	$(PIP) install -e $(CKAN_PATH)
+	$(PIP) install $(CKAN_PATH)
 	echo "$(CKAN_VERSION)" > $@
 
 $(SENTINELS)/ckan-installed: $(SENTINELS)/ckan-version | $(SENTINELS)
@@ -187,7 +187,7 @@ $(SENTINELS)/install: requirements.txt | $(SENTINELS)
 
 $(SENTINELS)/install-dev: requirements.txt | $(SENTINELS)
 	$(PIP) install -r dev-requirements.txt
-	$(PIP) install .
+	$(PIP) install -e .
 	@touch $@
 
 $(SENTINELS)/develop: $(SENTINELS)/requirements $(SENTINELS)/install $(SENTINELS)/install-dev setup.py | $(SENTINELS)
