@@ -37,7 +37,7 @@ jobs:
           - 6379:6379
 
       solr:
-        image: ckan/solr
+        image: ckan/ckan-solr:${{ matrix.ckan-version }}
         env:
           CKAN_SOLR_PASSWORD: ckan
         ports:
