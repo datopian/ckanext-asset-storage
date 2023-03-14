@@ -187,7 +187,7 @@ $(SENTINELS)/install: requirements.txt | $(SENTINELS)
 
 $(SENTINELS)/install-dev: requirements.txt | $(SENTINELS)
 	$(PIP) install -r dev-requirements.txt
-	$(PIP) install -e .
+	$(PIP) install .
 	@touch $@
 
 $(SENTINELS)/develop: $(SENTINELS)/requirements $(SENTINELS)/install $(SENTINELS)/install-dev setup.py | $(SENTINELS)
