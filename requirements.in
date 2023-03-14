@@ -4,5 +4,5 @@ memoized-property==1.*
 
 # Storage backend dependencies
 # TODO: Split these out so users don't have to install all of them
-google-cloud-storage==1.*
-azure-storage-blob==12.2.*
+google-cloud-storage==2.7.*
+azure-storage-blob==12.15.*
