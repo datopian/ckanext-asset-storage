@@ -8,7 +8,6 @@ PYTHON := python
 PIP := pip
 PIP_COMPILE := pip-compile
 PYTEST := pytest
-PASTER := paster
 DOCKER_COMPOSE := docker-compose
 PSQL := psql
 GIT := git
@@ -56,8 +55,6 @@ CKAN_TEST_CONFIG_VALUES := \
 		ckan.datastore.write_url=postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost/$(DATASTORE_DB_NAME)_test \
 		ckan.datastore.read_url=postgresql://$(DATASTORE_DB_RO_USER):$(DATASTORE_DB_RO_PASSWORD)@localhost/$(DATASTORE_DB_NAME)_test
 
-PACKAGE_VERSION := $(shell $(PYTHON) -c 'import $(PACKAGE_NAME) as p; print(p.__version__)')
-
 ifdef WITH_COVERAGE
   COVERAGE_ARG := --cov=$(PACKAGE_NAME)
 else
@@ -83,20 +80,10 @@ ckan-install: $(SENTINELS)/ckan-installed
 
 ## Run CKAN in the local virtual environment
 ckan-start: $(SENTINELS)/ckan-installed $(SENTINELS)/install-dev $(CKAN_CONFIG_FILE) | _check_virtualenv
-ifdef CKAN_CLI
 	$(CKAN_CLI) -c $(CKAN_CONFIG_FILE) db init
 	$(CKAN_CLI) -c $(CKAN_CONFIG_FILE) server -r
-else
-	$(PASTER) --plugin=ckan db init -c $(CKAN_CONFIG_FILE)
-	$(PASTER) --plugin=ckan serve --reload --monitor-restart $(CKAN_CONFIG_FILE)
-endif
-.PHONY: ckan-start
 
-## Create a version tag
-version-tag:
-	@echo "Creating tag: $(PACKAGE_TAG_PREFIX)$(PACKAGE_VERSION)$(PACKAGE_TAG_SUFFIX)"
-	$(GIT) tag "$(PACKAGE_TAG_PREFIX)$(PACKAGE_VERSION)$(PACKAGE_TAG_SUFFIX)"
-	$(GIT) push --tags
+.PHONY: ckan-start
 
 $(CKAN_PATH):
 	$(GIT) clone $(CKAN_REPO_URL) $@
