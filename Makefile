@@ -24,12 +24,11 @@ SENTINELS := .make-status
 
 PACKAGE_TAG_PREFIX := "v"
 PACKAGE_TAG_SUFFIX := ""
-PYTHON_VERSION := $(shell $(PYTHON) -c 'import sys; print(sys.version_info[0])')
 
 # CKAN environment variables
 CKAN_PATH := ckan
 CKAN_REPO_URL := https://github.com/ckan/ckan.git
-CKAN_VERSION := ckan-2.8.3
+CKAN_VERSION := ckan-2.9.8
 CKAN_CONFIG_FILE := $(CKAN_PATH)/development.ini
 CKAN_INI_TEMPLATE_FILE := $(CKAN_PATH)/ckan/config/deployment.ini_tmpl
 CKAN_SITE_URL := http://localhost:5000
@@ -64,17 +63,6 @@ ifdef WITH_COVERAGE
 else
   COVERAGE_ARG :=
 endif
-
-
-dev-requirements.%.txt: dev-requirements.in
-	$(PIP_COMPILE) --no-index dev-requirements.in -o $@
-
-requirements.%.txt: requirements.in
-	$(PIP_COMPILE) --no-index requirements.in -o $@
-
-## Update requirements files for the current Python version
-requirements: $(SENTINELS)/requirements
-.PHONEY: requirements
 
 ## Install this extension to the current Python environment
 install: $(SENTINELS)/install
@@ -114,15 +102,9 @@ $(CKAN_PATH):
 	$(GIT) clone $(CKAN_REPO_URL) $@
 
 $(CKAN_CONFIG_FILE): $(SENTINELS)/ckan-installed $(SENTINELS)/develop | _check_virtualenv
-ifdef CKAN_CLI
-	cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
+    cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
-else
-	$(PASTER) make-config --no-interactive ckan $(CKAN_CONFIG_FILE)
-	$(PASTER) --plugin=ckan config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
-	$(PASTER) --plugin=ckan config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
-endif
 
 .env:
 	@___POSTGRES_USER=$(POSTGRES_USER) \
@@ -192,11 +174,7 @@ $(SENTINELS)/ckan-version: $(CKAN_PATH) | _check_virtualenv $(SENTINELS)
 	$(GIT) -C $(CKAN_PATH) remote update
 	$(GIT) -C $(CKAN_PATH) checkout $(CKAN_VERSION)
 	if [ -e $(CKAN_PATH)/requirement-setuptools.txt ]; then $(PIP) install -r $(CKAN_PATH)/requirement-setuptools.txt; fi
-	if [[ "$(PYTHON_VERSION)" == "2" && -e $(CKAN_PATH)/requirements-py2.txt ]]; then \
-	  $(PIP) install -r $(CKAN_PATH)/requirements-py2.txt; \
-	else \
-	  $(PIP) install -r $(CKAN_PATH)/requirements.txt; \
-	fi
+    $(PIP) install -r $(CKAN_PATH)/requirements.txt
 	$(PIP) install -r $(CKAN_PATH)/dev-requirements.txt
 	$(PIP) install -e $(CKAN_PATH)
 	echo "$(CKAN_VERSION)" > $@
@@ -211,22 +189,18 @@ $(SENTINELS)/ckan-installed: $(SENTINELS)/ckan-version | $(SENTINELS)
 
 $(SENTINELS)/test.ini: $(TEST_INI_PATH) $(CKAN_PATH) $(CKAN_PATH)/test-core.ini | $(SENTINELS)
 	$(SED) "s@use = config:.*@use = config:$(CKAN_PATH)/test-core.ini@" -i $(TEST_INI_PATH)
-ifdef CKAN_CLI
 	$(CKAN_CLI) config-tool $(CKAN_PATH)/test-core.ini $(CKAN_CONFIG_VALUES) $(CKAN_TEST_CONFIG_VALUES)
-else
-	$(PASTER) --plugin=ckan config-tool $(CKAN_PATH)/test-core.ini $(CKAN_CONFIG_VALUES) $(CKAN_TEST_CONFIG_VALUES)
-endif
 	@touch $@
 
-$(SENTINELS)/requirements: requirements.py$(PYTHON_VERSION).txt dev-requirements.py$(PYTHON_VERSION).txt | $(SENTINELS)
+$(SENTINELS)/requirements: requirements.txt dev-requirements.txt | $(SENTINELS)
 	@touch $@
 
-$(SENTINELS)/install: requirements.py$(PYTHON_VERSION).txt | $(SENTINELS)
-	$(PIP) install -r requirements.py$(PYTHON_VERSION).txt
+$(SENTINELS)/install: requirements.txt | $(SENTINELS)
+	$(PIP) install -r requirements.txt
 	@touch $@
 
-$(SENTINELS)/install-dev: requirements.py$(PYTHON_VERSION).txt | $(SENTINELS)
-	$(PIP) install -r dev-requirements.py$(PYTHON_VERSION).txt
+$(SENTINELS)/install-dev: requirements.txt | $(SENTINELS)
+	$(PIP) install -r dev-requirements.txt
 	$(PIP) install -e .
 	@touch $@
 
@@ -234,11 +208,7 @@ $(SENTINELS)/develop: $(SENTINELS)/requirements $(SENTINELS)/install $(SENTINELS
 	@touch $@
 
 $(SENTINELS)/test-setup: $(SENTINELS)/develop $(SENTINELS)/test.ini
-ifdef CKAN_CLI
 	$(CKAN_CLI) -c $(TEST_INI_PATH) db init
-else
-	$(PASTER) --plugin=ckan db init -c $(TEST_INI_PATH)
-endif
 	@touch $@
 
 $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -type f) .flake8 .isort.cfg | $(SENTINELS)
