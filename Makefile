@@ -82,14 +82,13 @@ ckan-install: $(SENTINELS)/ckan-installed
 ckan-start: $(SENTINELS)/ckan-installed $(SENTINELS)/install-dev $(CKAN_CONFIG_FILE) | _check_virtualenv
 	$(CKAN_CLI) -c $(CKAN_CONFIG_FILE) db init
 	$(CKAN_CLI) -c $(CKAN_CONFIG_FILE) server -r
-
 .PHONY: ckan-start
 
 $(CKAN_PATH):
 	$(GIT) clone $(CKAN_REPO_URL) $@
 
 $(CKAN_CONFIG_FILE): $(SENTINELS)/ckan-installed $(SENTINELS)/develop | _check_virtualenv
-    cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
+	cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
 	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
 
