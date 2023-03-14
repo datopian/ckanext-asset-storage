@@ -15,9 +15,6 @@ GIT := git
 # Find GNU sed in path (on OS X gsed should be preferred)
 SED := $(shell which gsed sed | head -n1)
 
-# The `ckan` command line only exists in newer versions of CKAN
-CKAN_CLI := $(shell which ckan | head -n1)
-
 TEST_INI_PATH := ./test.ini
 SENTINELS := .make-status
 
@@ -80,8 +77,8 @@ ckan-install: $(SENTINELS)/ckan-installed
 
 ## Run CKAN in the local virtual environment
 ckan-start: $(SENTINELS)/ckan-installed $(SENTINELS)/install-dev $(CKAN_CONFIG_FILE) | _check_virtualenv
-	$(CKAN_CLI) -c $(CKAN_CONFIG_FILE) db init
-	$(CKAN_CLI) -c $(CKAN_CONFIG_FILE) server -r
+	ckan -c $(CKAN_CONFIG_FILE) db init
+	ckan -c $(CKAN_CONFIG_FILE) server -r
 .PHONY: ckan-start
 
 $(CKAN_PATH):
@@ -89,8 +86,8 @@ $(CKAN_PATH):
 
 $(CKAN_CONFIG_FILE): $(SENTINELS)/ckan-installed $(SENTINELS)/develop | _check_virtualenv
 	cp $(CKAN_INI_TEMPLATE_FILE) $(CKAN_CONFIG_FILE)
-	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
-	$(CKAN_CLI) config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
+	ckan config-tool $(CKAN_CONFIG_FILE) -s DEFAULT debug=true
+	ckan config-tool $(CKAN_CONFIG_FILE) $(CKAN_CONFIG_VALUES)
 
 .env:
 	@___POSTGRES_USER=$(POSTGRES_USER) \
@@ -176,7 +173,7 @@ $(SENTINELS)/ckan-installed: $(SENTINELS)/ckan-version | $(SENTINELS)
 
 $(SENTINELS)/test.ini: $(TEST_INI_PATH) $(CKAN_PATH) $(CKAN_PATH)/test-core.ini | $(SENTINELS)
 	$(SED) "s@use = config:.*@use = config:$(CKAN_PATH)/test-core.ini@" -i $(TEST_INI_PATH)
-	$(CKAN_CLI) config-tool $(CKAN_PATH)/test-core.ini $(CKAN_CONFIG_VALUES) $(CKAN_TEST_CONFIG_VALUES)
+	ckan config-tool $(CKAN_PATH)/test-core.ini $(CKAN_CONFIG_VALUES) $(CKAN_TEST_CONFIG_VALUES)
 	@touch $@
 
 $(SENTINELS)/requirements: requirements.txt dev-requirements.txt | $(SENTINELS)
@@ -195,7 +192,7 @@ $(SENTINELS)/develop: $(SENTINELS)/requirements $(SENTINELS)/install $(SENTINELS
 	@touch $@
 
 $(SENTINELS)/test-setup: $(SENTINELS)/develop $(SENTINELS)/test.ini
-	$(CKAN_CLI) -c $(TEST_INI_PATH) db init
+	ckan -c $(TEST_INI_PATH) db init
 	@touch $@
 
 $(SENTINELS)/tests-passed: $(SENTINELS)/test-setup $(shell find $(PACKAGE_DIR) -type f) .flake8 .isort.cfg | $(SENTINELS)
