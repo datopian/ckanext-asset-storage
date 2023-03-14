@@ -162,7 +162,8 @@ $(SENTINELS)/ckan-version: $(CKAN_PATH) | _check_virtualenv $(SENTINELS)
 	if [ -e $(CKAN_PATH)/requirement-setuptools.txt ]; then $(PIP) install -r $(CKAN_PATH)/requirement-setuptools.txt; fi
 	$(PIP) install -r $(CKAN_PATH)/requirements.txt
 	$(PIP) install -r $(CKAN_PATH)/dev-requirements.txt
-	$(PIP) install $(CKAN_PATH)
+	cd $(CKAN_PATH)
+	$(PIP) install .
 	echo "$(CKAN_VERSION)" > $@
 
 $(SENTINELS)/ckan-installed: $(SENTINELS)/ckan-version | $(SENTINELS)
