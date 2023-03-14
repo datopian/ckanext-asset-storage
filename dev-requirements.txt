@@ -6,6 +6,8 @@
 #
 attrs==20.2.0
     # via pytest
+build==0.10.0
+    # via pip-tools
 click==7.1.2
     # via pip-tools
 flake8==6.0.0
@@ -17,8 +19,10 @@ isort==4.3.21
 mccabe==0.7.0
     # via flake8
 packaging==20.4
-    # via pytest
-pip-tools==5.4.0
+    # via
+    #   build
+    #   pytest
+pip-tools==6.8.0
     # via -r dev-requirements.in
 pluggy==0.13.1
     # via pytest
@@ -30,6 +34,8 @@ pyflakes==3.0.1
     # via flake8
 pyparsing==2.4.7
     # via packaging
+pyproject-hooks==1.0.0
+    # via build
 pytest==7.1.3
     # via
     #   -r dev-requirements.in
@@ -43,11 +49,14 @@ pytest-flake8==1.1.1
 pytest-isort==3.1.0
     # via -r dev-requirements.in
 six==1.16.0
-    # via
-    #   packaging
-    #   pip-tools
+    # via packaging
 tomli==2.0.1
-    # via pytest
+    # via
+    #   build
+    #   pytest
+wheel==0.38.4
+    # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip
+# setuptools
