@@ -1,3 +1,4 @@
+typing
 typing_extensions==4.3.0
 python-dateutil==2.*
 memoized-property==1.*
