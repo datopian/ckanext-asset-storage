@@ -1,7 +1,7 @@
 """Tests for the local storage backend
 """
 import pytest
-from six import BytesIO
+from io import BytesIO
 
 from ckanext.asset_storage.storage import exc
 from ckanext.asset_storage.storage.local import LocalStorage

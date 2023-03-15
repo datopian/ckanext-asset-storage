@@ -5,10 +5,7 @@ from typing import Optional, Tuple
 
 from ckanext.asset_storage.storage import DownloadTarget, StorageBackend, exc
 
-try:
-    from pathlib import Path
-except ImportError:
-    from pathlib2 import Path
+from pathlib import Path
 
 
 _log = logging.getLogger(__name__)

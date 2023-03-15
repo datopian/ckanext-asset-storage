@@ -1,11 +1,8 @@
 """Storage specific errors
 """
-import six
-
-_BaseException = Exception if six.PY3 else StandardError  # noqa: F821
 
 
-class StorageError(_BaseException):
+class StorageError(Exception):
     """Base exception for all storage errors
     """
     pass

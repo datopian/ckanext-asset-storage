@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
 from setuptools import setup, find_packages  # Always prefer setuptools over distutils
 from codecs import open  # To use a consistent encoding
 from os import path
-
-import ckanext.asset_storage
 
 here = path.abspath(path.dirname(__file__))
 
@@ -17,7 +14,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # http://packaging.python.org/en/latest/tutorial.html#version
-    version=ckanext.asset_storage.__version__,
+    version='0.1.7',
 
     description='''Store CKAN asset files on a 3rd party storage service''',
     long_description=long_description,
@@ -60,8 +57,6 @@ setup(
     namespace_packages=['ckanext'],
 
     install_requires=[
-        'six',
-        'typing',
     ],
 
     # If there are data files included in your packages that need to be

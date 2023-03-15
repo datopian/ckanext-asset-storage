@@ -3,7 +3,7 @@
 from cgi import FieldStorage
 
 import pytest
-from six import BytesIO
+from io import BytesIO
 from werkzeug.datastructures import FileStorage
 
 from ckanext.asset_storage import uploader
