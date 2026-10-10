@@ -7,7 +7,6 @@ import os
 from typing import Optional, Union
 
 from ckan.lib.munge import munge_filename_legacy
-from ckan.lib.uploader import _get_underlying_file  # noqa
 from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES, MB
 from ckan.plugins import toolkit
 from six.moves.urllib_parse import quote, unquote
@@ -188,6 +187,17 @@ def _is_uploaded_file_field(field):
 
     # cgi.FieldStorage is False-ish even if it exists and contains an uploaded file :`(
     return hasattr(field, 'filename') and field.filename
+
+
+def _get_underlying_file(wrapper):
+    """The file object inside an uploaded file field
+
+    CKAN 2.9 had this as ckan.lib.uploader._get_underlying_file; 2.11 removed
+    it. Flask's FileStorage keeps the file in `stream`, cgi.FieldStorage (only
+    on CKAN versions before 2.10) in `file`.
+    """
+    stream = getattr(wrapper, 'stream', None)
+    return stream if stream is not None else wrapper.file
 
 
 def decode_uri(uri):

@@ -111,3 +111,22 @@ def test_uploader_property():
                                       headers={"content-disposition": 'form-data; name="file"; filename="foo.png"'})}
     up.update_data_dict(data_dict, 'url', 'file', 'clear')
     assert up.filename.endswith('-foo.png')
+
+
+def test_get_underlying_file():
+    """Flask's FileStorage keeps the file in `stream`, cgi.FieldStorage in
+    `file`; CKAN 2.11 no longer provides the helper that told them apart.
+    """
+    from io import BytesIO
+
+    from werkzeug.datastructures import FileStorage
+
+    from ckanext.asset_storage.uploader import _get_underlying_file
+
+    stream = BytesIO(b'data')
+    assert _get_underlying_file(FileStorage(stream=stream)) is stream
+
+    class FieldStorage(object):
+        file = BytesIO(b'data')
+
+    assert _get_underlying_file(FieldStorage()) is FieldStorage.file
