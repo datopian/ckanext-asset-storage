@@ -8,6 +8,12 @@ from werkzeug.datastructures import FileStorage
 
 from ckanext.asset_storage import uploader
 
+# CKAN 2.10+ only accepts Flask's FileStorage as an upload; cgi.FieldStorage
+# was the Pylons (CKAN <= 2.8) one.
+cgi_uploads = pytest.mark.skipif(
+    FieldStorage not in uploader.ALLOWED_UPLOAD_TYPES,
+    reason="this CKAN doesn't accept cgi.FieldStorage uploads")
+
 
 @pytest.mark.parametrize('value,expected', [
     ('https://foo.com/bar', True),
@@ -86,6 +92,7 @@ def test_uploader_update_data_dict_cleared():
     assert data_dict['url'] == ''
 
 
+@cgi_uploads
 def test_uploader_update_data_dict_existing_file_cgi():
     """Test that the uploader updates the data dict properly when a file already exists
 
@@ -102,6 +109,7 @@ def test_uploader_update_data_dict_existing_file_cgi():
     assert data_dict['url'].endswith('-foo.png')
 
 
+@cgi_uploads
 def test_uploader_property():
     backend = uploader.get_configured_storage()
     up = uploader.AssetUploader(backend, 'group', 'bar.png')
