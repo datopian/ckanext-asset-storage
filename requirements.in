@@ -1,5 +1,4 @@
 six==1.14.*
-typing==3.7.*
 python-dateutil==2.*
 memoized-property==1.*
 
