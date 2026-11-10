@@ -7,14 +7,22 @@ import os
 from typing import Optional, Union
 
 from ckan.lib.munge import munge_filename_legacy
-from ckan.lib.uploader import ALLOWED_UPLOAD_TYPES, MB
+from ckan.lib.uploader import MB
 from ckan.plugins import toolkit
 from six.moves.urllib_parse import quote, unquote
+from werkzeug.datastructures import FileStorage
+
 
 from ckanext.asset_storage.storage import StorageBackend, get_storage
 
 CONF_BACKEND_TYPE = 'ckanext.asset_storage.backend_type'
 CONF_BACKEND_CONFIG = 'ckanext.asset_storage.backend_options'
+
+# What an uploaded file field can be. CKAN 2.12 dropped this constant from
+# ckan.lib.uploader; since 2.10 an upload is only ever werkzeug's FileStorage
+# (cgi.FieldStorage was the Pylons type, and the cgi module is gone from
+# Python 3.13).
+ALLOWED_UPLOAD_TYPES = (FileStorage,)
 
 # This is used for typing uploaded file form field wrapper
 UploadedFileWrapper = Union[ALLOWED_UPLOAD_TYPES]
